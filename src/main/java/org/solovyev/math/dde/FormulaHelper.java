@@ -104,7 +104,7 @@ public class FormulaHelper {
 			System.out.println(getConstantName("x", i + 1) + " = " + x_s);
 			for (String s : Arrays.asList("α", "β", "γ")) {
 				for (int from = 0; from < cols ; from++) {
-					for (int to = cols - 1; to >= from + 3 ; to--) {
+					for (int to = cols - 1; to >= from + 1 ; to--) {
 						final String product = getProduct(s, from, to);
 						x_s = x_s.replace(product, "∏" +getConstantName(s, i)+"_" + from + "_" + to);
 					}
