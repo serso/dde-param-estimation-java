@@ -3,6 +3,7 @@ package org.solovyev.math.dde;
 import jscl.math.*;
 import jscl.math.function.Constant;
 import jscl.math.function.Fraction;
+import jscl.text.ParseException;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -58,10 +59,13 @@ public class FormulaHelper {
 			}
 		}
 
-		getUnknowns(rows, cols, a);
+		try {
+			getUnknowns(rows, cols, a);
+		} catch (ParseException e) {
+		}
 	}
 
-	private static void getUnknowns(int rows, int cols, Matrix a) {
+	private static void getUnknowns(int rows, int cols, Matrix a) throws ParseException {
 		final Generic[][] a0 = a.elements();
 		final Generic[] b0 = new Generic[rows];
 
@@ -101,17 +105,26 @@ public class FormulaHelper {
 			final Generic x = x0[i];
 
 			String x_s = x.simplify().toString();
-			System.out.println(getConstantName("x", i + 1) + " = " + x_s);
+			//System.out.println(getConstantName("x", i + 1) + " = " + x_s);
 			for (String s : Arrays.asList("α", "β", "γ")) {
 				for (int from = 0; from < cols ; from++) {
 					for (int to = cols - 1; to >= from + 1 ; to--) {
 						final String product = getProduct(s, from, to);
-						x_s = x_s.replace(product, "∏" +getConstantName(s, i)+"_" + from + "_" + to);
+						x_s = x_s.replace(product, "∏(" +getConstantName(s, "i")+",i," + from + "," + to +")");
 					}
 				}
 			}
 			System.out.println(getConstantName("x", i + 1) + " = " + x_s);
+			x0[i] = Expression.valueOf(x_s);
 		}
+
+
+		final List<String> expressions = new ArrayList<String>();
+		for (Generic x : x0) {
+			expressions.add(x.toMathML());
+		}
+
+		MathMlViewer.show(new MathMlViewer.Input(expressions));
 	}
 
 	private static String getProduct(String s, int j, int k) {
@@ -126,6 +139,10 @@ public class FormulaHelper {
 	}
 
 	private static String getConstantName(String name, int i) {
+		return getConstantName(name, String.valueOf(i));
+	}
+
+	private static String getConstantName(String name, String i) {
 		return name + "[" + i + "]";
 	}
 
