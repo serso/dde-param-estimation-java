@@ -5,10 +5,7 @@ import jscl.math.function.Constant;
 import jscl.math.function.Fraction;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: serso
@@ -38,18 +35,18 @@ public class FormulaHelper {
 
 		for (int row = 0; row < rows; row++) {
 			for (int col = 0; col < cols; col++) {
-				if ( row == col ) {
+				if (row == col) {
 					a0[row][col] = createConstant("α", row + 1);
-				} else if ( row + 1 == col ) {
+				} else if (row + 1 == col) {
 					a0[row][col] = createConstant("β", row + 1);
-				} else if ( col >= n ) {
+				} else if (col >= n) {
 					a0[row][col] = createConstant("γ", row + 1);
 				} else {
 					int delayI = 0;
 					for (Integer delay : delays) {
 						delayI++;
 
-						if ( row == col + delay ) {
+						if (row == col + delay) {
 							a0[row][col] = createConstant("τ", delayI, row + 1 - delay);
 						}
 					}
@@ -73,10 +70,10 @@ public class FormulaHelper {
 			b0[row] = createConstant("b", row + 1);
 		}
 
-		final Map<String, Generic> cache = new HashMap<String, Generic>();
+		final Generic[] x0 = new Generic[cols];
 		for (int col = 0; col < cols; col++) {
 			final Generic x = createConstant("x", col + 1);
-			cache.put(x.toString(), x);
+			x0[col] = x;
 
 		}
 		for (int row = 0; row < rows; row++) {
@@ -84,12 +81,12 @@ public class FormulaHelper {
 			Generic x_i = JsclInteger.ZERO;
 			for (int col = 0; col < cols; col++) {
 
-				if ( row + 1 != col ) {
-					x_i = x_i.add(new Fraction(a0[row][col].negate().multiply(cache.get(getConstantName("x", col + 1))), a0[row][row + 1]).simplify());
+				if (row + 1 != col) {
+					x_i = x_i.add(new Fraction(a0[row][col].negate().multiply(x0[col]), a0[row][row + 1]).simplify());
 				}
 			}
 
-			cache.put(getConstantName("x", row + 2), x_i);
+			x0[row + 1] = x_i;
 		}
 
 
@@ -100,14 +97,35 @@ public class FormulaHelper {
 		System.out.println(b);
 
 		System.out.println("x = ");
-		for (int col = 0; col < cols; col++) {
-			String xiName = getConstantName("x", col + 1);
-			System.out.println(xiName + " = " + cache.get(xiName));
+		for (int i = 0; i < x0.length; i++) {
+			final Generic x = x0[i];
 
+			String x_s = x.simplify().toString();
+			System.out.println(getConstantName("x", i + 1) + " = " + x_s);
+			for (String s : Arrays.asList("α", "β", "γ")) {
+				for (int from = 0; from < cols ; from++) {
+					for (int to = cols - 1; to >= from + 3 ; to--) {
+						final String product = getProduct(s, from, to);
+						x_s = x_s.replace(product, "∏" +getConstantName(s, i)+"_" + from + "_" + to);
+					}
+				}
+			}
+			System.out.println(getConstantName("x", i + 1) + " = " + x_s);
 		}
 	}
 
-	private static String getConstantName( String name, int i ) {
+	private static String getProduct(String s, int j, int k) {
+		final StringBuilder result = new StringBuilder();
+		for ( int i = j; i <= k; i++ ) {
+			if ( i != j ) {
+				result.append("*");
+			}
+			result.append(getConstantName(s, i));
+		}
+		return result.toString();
+	}
+
+	private static String getConstantName(String name, int i) {
 		return name + "[" + i + "]";
 	}
 
@@ -123,5 +141,28 @@ public class FormulaHelper {
 			subscripts = new Generic[]{JsclInteger.valueOf(row)};
 		}
 		return new Constant(name, 0, subscripts).expressionValue();
+	}
+
+	private static class MyConstant extends Constant {
+
+		public MyConstant(String name) {
+			super(name);
+		}
+
+		public MyConstant(String name, int prime, Generic[] subscripts) {
+			super(name, prime, subscripts);
+		}
+
+		@Override
+		public String toString() {
+			final StringBuilder result = new StringBuilder();
+			result.append(name);
+
+			for (Generic subscript : subscript()) {
+				result.append("_").append(subscript);
+			}
+
+			return result.toString();
+		}
 	}
 }
