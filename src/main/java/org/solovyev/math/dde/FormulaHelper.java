@@ -48,7 +48,7 @@ public class FormulaHelper {
 						delayI++;
 
 						if (row == col + delay) {
-							a0[row][col] = createConstant("τ", delayI, row + 1 - delay);
+							a0[row][col] = createConstant("τ", row + 1 - delay);
 						}
 					}
 
@@ -82,7 +82,7 @@ public class FormulaHelper {
 		}
 		for (int row = 0; row < rows; row++) {
 
-			Generic x_i = JsclInteger.ZERO;
+			Generic x_i = b0[row];
 			for (int col = 0; col < cols; col++) {
 
 				if (row + 1 != col) {
