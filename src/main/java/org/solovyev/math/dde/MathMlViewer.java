@@ -15,14 +15,13 @@ import java.util.List;
 public class MathMlViewer {
 
 	private Component createComponents(@NotNull Input input) {
-		final JLabel label = new JLabel("Formula");
-
 		/*
 			 * An easy way to put space between a top-level container and its
 			 * contents is to put the contents in a JPanel that has an "empty"
 			 * border.
 			 */
 		JPanel pane = new JPanel();
+		pane.setBackground(Color.WHITE);
 		pane.setBorder(BorderFactory.createEmptyBorder(30, //top
 				30, //left
 				10, //bottom
@@ -36,8 +35,6 @@ public class MathMlViewer {
 			mathMlViewPort.setFontSize(20);
 			pane.add(mathMlViewPort);
 		}
-
-		pane.add(label);
 
 		return pane;
 	}

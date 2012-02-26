@@ -18,7 +18,7 @@ public class FormulaHelper {
 	public static void main(String[] args) {
 
 		// number of unknowns
-		final int n = 10;
+		final int n = 7;
 
 		// number of estimated parameters
 		final int p = 1;
